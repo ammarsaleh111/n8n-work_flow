@@ -1,0 +1,765 @@
+{
+  "name": "Math Teacher Booking Assistant (Telegram)",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ]
+      },
+      "id": "TelegramTrigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keepOnlySet": false,
+        "values": {
+          "string": [
+            {
+              "name": "chat_id",
+              "value": "={{$json.message.chat.id}}"
+            }
+          ]
+        }
+      },
+      "id": "StoreChatId",
+      "name": "Store Chat Id",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [200, 0]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.chat_id}}",
+        "text": "Which prep year are you in?",
+        "additionalFields": {
+          "replyMarkup": "={\"keyboard\":[[\"1 prep\"],[\"2 prep\"],[\"3 prep\"]],\"one_time_keyboard\":true,\"resize_keyboard\":true}"
+        }
+      },
+      "id": "AskPrepYear",
+      "name": "Ask Prep Year",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [400, 0],
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "waitFor": "webhook",
+        "options": {
+          "responseMode": "onReceived"
+        }
+      },
+      "id": "WaitPrepYear",
+      "name": "Wait for Prep Year",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [600, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.message.text}}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "id": "PrepYearEmpty",
+      "name": "Prep Year Empty?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [800, 0]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": false,
+        "values": {
+          "string": [
+            {
+              "name": "prep_year",
+              "value": "={{$json.message.text}}"
+            }
+          ]
+        }
+      },
+      "id": "StorePrepYear",
+      "name": "Store Prep Year",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [1000, 0]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.chat_id}}",
+        "text": "What was your overall grade last year?",
+        "additionalFields": {
+          "replyMarkup": "={\"keyboard\":[[\"90–100 %\"],[\"80–90 %\"],[\"70–80 %\"],[\"Below 70 %\"]],\"one_time_keyboard\":true,\"resize_keyboard\":true}"
+        }
+      },
+      "id": "AskPerformance",
+      "name": "Ask Performance",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1200, 0],
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "waitFor": "webhook",
+        "options": {
+          "responseMode": "onReceived"
+        }
+      },
+      "id": "WaitPerformance",
+      "name": "Wait for Performance",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1400, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.message.text}}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "id": "PerformanceEmpty",
+      "name": "Performance Empty?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1600, 0]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": false,
+        "values": {
+          "string": [
+            {
+              "name": "performance_range",
+              "value": "={{$json.message.text}}"
+            }
+          ]
+        }
+      },
+      "id": "StorePerformance",
+      "name": "Store Performance",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [1800, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.performance_range}}",
+              "operation": "equal",
+              "value2": "Below 70 %"
+            }
+          ]
+        }
+      },
+      "id": "RejectLowPerformance",
+      "name": "Reject Low Performance?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2000, 0]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.chat_id}}",
+        "text": "Sorry, I can’t add you."
+      },
+      "id": "SendRejection",
+      "name": "Send Rejection",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [2200, -150],
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.chat_id}}",
+        "text": "Full name"
+      },
+      "id": "AskName",
+      "name": "Ask Full Name",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [2200, 100],
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "waitFor": "webhook",
+        "options": {
+          "responseMode": "onReceived"
+        }
+      },
+      "id": "WaitName",
+      "name": "Wait for Name",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [2400, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.message.text}}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "id": "NameEmpty",
+      "name": "Name Empty?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2600, 100]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": false,
+        "values": {
+          "string": [
+            {
+              "name": "student_name",
+              "value": "={{$json.message.text}}"
+            }
+          ]
+        }
+      },
+      "id": "StoreName",
+      "name": "Store Name",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [2800, 100]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.chat_id}}",
+        "text": "Phone number"
+      },
+      "id": "AskPhone",
+      "name": "Ask Phone",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [3000, 100],
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "waitFor": "webhook",
+        "options": {
+          "responseMode": "onReceived"
+        }
+      },
+      "id": "WaitPhone",
+      "name": "Wait for Phone",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [3200, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.message.text}}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "id": "PhoneEmpty",
+      "name": "Phone Empty?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [3400, 100]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": false,
+        "values": {
+          "string": [
+            {
+              "name": "phone",
+              "value": "={{$json.message.text}}"
+            }
+          ]
+        }
+      },
+      "id": "StorePhone",
+      "name": "Store Phone",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [3600, 100]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.chat_id}}",
+        "text": "Address"
+      },
+      "id": "AskAddress",
+      "name": "Ask Address",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [3800, 100],
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "waitFor": "webhook",
+        "options": {
+          "responseMode": "onReceived"
+        }
+      },
+      "id": "WaitAddress",
+      "name": "Wait for Address",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [4000, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.message.text}}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "id": "AddressEmpty",
+      "name": "Address Empty?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [4200, 100]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": false,
+        "values": {
+          "string": [
+            {
+              "name": "address",
+              "value": "={{$json.message.text}}"
+            }
+          ]
+        }
+      },
+      "id": "StoreAddress",
+      "name": "Store Address",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [4400, 100]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "append",
+        "sheetId": "YOUR_SHEET_ID",
+        "range": "Sheet1!A:F",
+        "options": {},
+        "fields": {
+          "values": [
+            "={{$json.student_name}}",
+            "={{$json.phone}}",
+            "={{$json.address}}",
+            "={{$json.prep_year}}",
+            "={{$json.performance_range}}",
+            "={{$now.toISO()}}"
+          ]
+        }
+      },
+      "id": "AppendToSheet",
+      "name": "Append to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [4600, 100],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_OAUTH_CREDENTIAL_ID",
+          "name": "Google Sheets OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.chat_id}}",
+        "text": "Okay, you are registered successfully."
+      },
+      "id": "SendSuccess",
+      "name": "Send Success",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [4800, 100],
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Store Chat Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Chat Id": {
+      "main": [
+        [
+          {
+            "node": "Ask Prep Year",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask Prep Year": {
+      "main": [
+        [
+          {
+            "node": "Wait for Prep Year",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Prep Year": {
+      "main": [
+        [
+          {
+            "node": "Prep Year Empty?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Year Empty?": {
+      "main": [
+        [
+          {
+            "node": "Ask Prep Year",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store Prep Year",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Prep Year": {
+      "main": [
+        [
+          {
+            "node": "Ask Performance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask Performance": {
+      "main": [
+        [
+          {
+            "node": "Wait for Performance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Performance": {
+      "main": [
+        [
+          {
+            "node": "Performance Empty?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Performance Empty?": {
+      "main": [
+        [
+          {
+            "node": "Ask Performance",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store Performance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Performance": {
+      "main": [
+        [
+          {
+            "node": "Reject Low Performance?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject Low Performance?": {
+      "main": [
+        [
+          {
+            "node": "Send Rejection",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask Full Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask Full Name": {
+      "main": [
+        [
+          {
+            "node": "Wait for Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Name": {
+      "main": [
+        [
+          {
+            "node": "Name Empty?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Name Empty?": {
+      "main": [
+        [
+          {
+            "node": "Ask Full Name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Name": {
+      "main": [
+        [
+          {
+            "node": "Ask Phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask Phone": {
+      "main": [
+        [
+          {
+            "node": "Wait for Phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Phone": {
+      "main": [
+        [
+          {
+            "node": "Phone Empty?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Phone Empty?": {
+      "main": [
+        [
+          {
+            "node": "Ask Phone",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store Phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Phone": {
+      "main": [
+        [
+          {
+            "node": "Ask Address",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask Address": {
+      "main": [
+        [
+          {
+            "node": "Wait for Address",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Address": {
+      "main": [
+        [
+          {
+            "node": "Address Empty?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Address Empty?": {
+      "main": [
+        [
+          {
+            "node": "Ask Address",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store Address",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Address": {
+      "main": [
+        [
+          {
+            "node": "Append to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Send Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1"
+}
